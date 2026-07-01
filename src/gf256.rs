@@ -83,7 +83,7 @@ mod tests {
     }
 
     #[test]
-    fn test_mul() {
+    fn test_mul_inv() {
         assert_eq!(GF256::mul(0, 0), 0);
         assert_eq!(GF256::mul(10, 1), 10);
         assert_eq!(GF256::mul(204, GF256::inv(204).unwrap()), 1);
