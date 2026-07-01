@@ -12,9 +12,8 @@ impl GF256 {
         if a==0 || b==0 {
             0
         } else {
-            let log_c = (log[a as usize] + log[b as usize]) as u16 ;
-            let val = log_c%255;
-            exp[val as usize]
+            let log_c = (((log[a as usize] as u16)+ (log[b as usize] as u16)) as u8)%255;
+            exp[log_c as usize]
         }
     }
 
@@ -40,7 +39,7 @@ impl GF256 {
 
 static TABLES: OnceLock<([u8; 256], [u8; 256])> = OnceLock::new();
 
-fn get_tables() -> &'static([u8; 256], [u8; 256]) {
+pub fn get_tables() -> &'static([u8; 256], [u8; 256]) {
     TABLES.get_or_init(|| generate_tables())
 }
 fn generate_tables() -> ([u8; 256], [u8; 256]) {
@@ -58,9 +57,30 @@ fn generate_tables() -> ([u8; 256], [u8; 256]) {
         }
     }
 
+    // log[0] is not defined, and exp[i] is never 0.
     for i in 0..log.len() {
         log[exp[i] as usize] = i as u8;
     }
 
     (exp, log)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_add() {
+        assert_eq!(GF256::add(213, 1), 212);
+        assert_eq!(GF256::add(255, 7), 248);
+        assert_eq!(GF256::add(0x2c, 0x32), 30);
+    }
+
+    #[test]
+    fn test_mul() {
+        assert_eq!(GF256::mul(0, 0), 0);
+        assert_eq!(GF256::mul(10, 1), 10);
+        assert_eq!(GF256::mul(204, GF256::inv(204).unwrap()), 1);
+        assert_eq!(GF256::mul(55, 12), GF256::mul(12, 55));
+    }
 }
