@@ -48,17 +48,23 @@ fn generate_tables() -> ([u8; 256], [u8; 256]) {
 
     exp[0] = 1;
 
-    for i in 1..exp.len() {
+    /*
+     * ethereum uses 0x11b (x8+x4+x3+x+1) as the irreducible polynomial in GF(256)
+     * that gives a cycle length of 51 here. AES systems usually use this polynomial,
+     * but use a generator that is primitive for it. The klaudpost/ReedSolomon Go 
+     * libray uses 0x11d (x8+x4+x3+x2+1) which gives a cycle length of 255.
+     */
+    for i in 1..exp.len()-1 {
         let val = (exp[i-1] as u16)<<1; // since 0x11b doesnt fit in u8.. 100011011 is 9 bit btw
         if val > 0xff {
-            exp[i] = (val^(0x11b)) as u8;
+            exp[i] = (val^(0x11d)) as u8;
         } else {
             exp[i] = val as u8;
         }
     }
 
     // log[0] is not defined, and exp[i] is never 0.
-    for i in 0..log.len() {
+    for i in 0..log.len()-1 {
         log[exp[i] as usize] = i as u8;
     }
 
