@@ -1,16 +1,70 @@
-
+use crate::gf256;
 
 /*
  * To evaluate p(x) at some point z, you compute:
  * p(z) = c₀ + c₁z + c₂z² + c₃z³ + ...
  * There's a nice algorithm for this called Horner's method:
- * p(z) = c₀ + z(c₁ + z(c₂ + z(c₃ + ...)))
+ * p(z) = c₀ + z(c₁ + z(c₂ + z(c₃ + ...z(cn))))
  * this is the direction we build our coeffs vector in to create a polynomial.
 */
 
-// evaluate p(z)
-fn eval(coeffs: &[u8], z: u8) -> u8 {
-    
-    todo!()
+pub struct Polynomial {
+    coeffs: Vec<u8>
 }
+
+impl Polynomial {
+    // evaluate p(z) using horner's algorithm
+    // TODO: revisit empty/all-zero coeffs semantics once encoder is built
+    pub fn eval(&self, z: u8) -> Option<u8>{
+        let coeffs = &self.coeffs;
+        if coeffs.is_empty() {
+            None
+        } else if coeffs.iter().all(|c| *c==0){
+            Some(0)
+        } else {
+            let mut t = coeffs[0];
+            for i in 1..coeffs.len() {
+                t = gf256::GF256::add(gf256::GF256::mul(t,z), coeffs[i]);
+            }
+            Some(t)
+        }
+    }
+
+    pub fn degree(&self) -> Option<u32> {
+        if self.coeffs.is_empty() {
+            None
+        } else {
+            Some((self.coeffs.len()-1) as u32)
+        }
+    }
+
+    
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_polynomial_evaluation() {
+        let coeffs1 = vec![4, 8, 1];
+        let coeffs2 = vec![0, 0, 0, 0];
+        let coeffs3: Vec<u8> = vec![];
+        let poly1 = Polynomial {
+            coeffs: coeffs1,
+        };
+        let poly2 = Polynomial {
+            coeffs: coeffs2,
+        };
+        let poly3 = Polynomial {
+            coeffs: coeffs3,
+        };
+
+        assert_eq!(Polynomial::eval(&poly1, 1), Some(13));
+        assert_eq!(Polynomial::eval(&poly2, 4), Some(0));
+        assert_eq!(Polynomial::eval(&poly3, 2), None);
+    }
+}
+
+
 
