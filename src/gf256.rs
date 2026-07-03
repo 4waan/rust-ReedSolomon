@@ -3,10 +3,13 @@ use std::sync::OnceLock;
 pub struct GF256;
 
 impl GF256 {
+
+    // pointless add function
     pub fn add(a: u8, b: u8) -> u8 {
         a^b
     }
 
+    // well written multiplying func in gf(256) :)
     pub fn mul(a: u8, b:u8) -> u8 {
         let (exp, log) = get_tables();
         if a==0 || b==0 {
@@ -17,6 +20,7 @@ impl GF256 {
         }
     }
 
+    // obvious ass inverse function
     pub fn inv(a: u8) -> Result<u8, String> {
         let (exp, log) = get_tables();
         if a==0 {
@@ -26,6 +30,7 @@ impl GF256 {
         }
     }
 
+    // divide is multiplying by inverse
     pub fn div(a: u8, b: u8) -> Result<u8, String> {
         if a==0 {
             Ok(0)
@@ -37,11 +42,15 @@ impl GF256 {
     }
 }
 
+// being new to rust makes this a why tf:
+// ok so static basically means a static lifetime of the value in it.
+// what does oncelock do? cool thing: it allows for uninitialized value.
 static TABLES: OnceLock<([u8; 256], [u8; 256])> = OnceLock::new();
 
 pub fn get_tables() -> &'static([u8; 256], [u8; 256]) {
     TABLES.get_or_init(|| generate_tables())
 }
+
 fn generate_tables() -> ([u8; 256], [u8; 256]) {
     let mut exp = [0u8; 256];
     let mut log = [0u8; 256];

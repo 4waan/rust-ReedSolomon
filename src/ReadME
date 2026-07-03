@@ -1,0 +1,4 @@
+## Reed-Solomon Encoder/Decoder
+
+Built from scratch: 
+A rust implementation of Reed-Solomon error correction in encoding/decoding data.

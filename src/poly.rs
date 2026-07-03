@@ -8,13 +8,20 @@ use crate::gf256;
  * this is the direction we build our coeffs vector in to create a polynomial.
 */
 
+// yeah why tf a struct for polynomial? no fuckn idea might undo this shit.
 pub struct Polynomial {
-    coeffs: Vec<u8>
+    pub coeffs: Vec<u8>
 }
 
 impl Polynomial {
+    pub fn new(coeffs: &[u8]) -> Self {
+        let c = coeffs.to_vec();
+        Polynomial{
+            coeffs: c,
+        }
+    }
     // evaluate p(z) using horner's algorithm
-    // TODO: revisit empty/all-zero coeffs semantics once encoder is built
+    // empty polynomial means fucking nothing. coeffs have to be represented as 0s.
     pub fn eval(&self, z: u8) -> Option<u8>{
         let coeffs = &self.coeffs;
         if coeffs.is_empty() {
@@ -41,6 +48,8 @@ impl Polynomial {
     
 }
 
+
+//fuckass test written for obvious fuckass cases.. im never debugging shit.
 #[cfg(test)]
 mod tests {
     use super::*;
